@@ -1,30 +1,26 @@
-# NurseVoice AI — Stage 1
+NurseVoice AI — Stage 1.1 Accuracy Upgrade
 
-## Files
-- `index.html` — app interface and voice transcription logic
-- `sw.js` — caches the app shell for offline reopening
-- `manifest.json` — Android install/PWA settings
+Files:
+- index.html: updated app, model selector, audio recording and transcription
+- sw.js: updated service-worker cache version
+- manifest.json: PWA metadata
 
-## Run on Android
-Microphone access requires a secure context. Do not open `index.html` directly from the file manager.
+Update GitHub:
+1. Open https://github.com/mvb-vijay/Nurse-voice-AI
+2. Open index.html > pencil/Edit > replace ALL contents with the supplied index.html > Commit changes.
+3. Repeat for sw.js and manifest.json, replacing the entire file contents.
+4. Wait for GitHub Pages deployment to show a green tick in Actions.
+5. Open https://mvb-vijay.github.io/Nurse-voice-AI/ in Chrome.
+6. If old app persists, clear site data for mvb-vijay.github.io in Chrome settings, then reopen. Clearing site data may remove cached models.
+7. Connect to Wi-Fi, choose Whisper Base, tap Download/load selected model and wait until loaded. Base is a separate model and must be downloaded separately from Tiny.
+8. Test English first, then Telugu. Auto mode may attempt mixed speech but code-switching can remain inaccurate.
+9. Test offline only after the selected model has loaded successfully online.
 
-Recommended free route:
-1. Extract this ZIP.
-2. Create a GitHub repository named `nursevoice`.
-3. Upload all three files to the repository root.
-4. In repository Settings → Pages, choose deploy from branch `main`, folder `/ (root)`.
-5. Open the generated `https://YOUR-USERNAME.github.io/nursevoice/` URL in Chrome.
-6. Allow microphone permission.
-7. Tap "Download / load offline AI model" while online. Wait until it says the model is loaded.
-8. Make a short test recording and transcribe it.
-9. In Chrome menu ⋮ choose "Add to Home screen" or "Install app".
-10. Open the installed app once while online, then test airplane mode.
+Model:
+- Default: Xenova/whisper-base, multilingual and larger/slower than Tiny.
+- Fallback: Xenova/whisper-tiny.
+- Both use q8 quantized browser execution.
+- Browser cache can be evicted/cleared; download again if that happens.
 
-## Offline note
-The service worker caches the app shell. Transformers.js uses the browser Cache API for model assets. Browser storage may be cleared automatically or manually; if the model is evicted, connect to the internet and load it again. The initial download requires internet. Keep sufficient free storage and memory.
-
-## Model
-`Xenova/whisper-tiny` is a multilingual Whisper ONNX model. This app uses q8 quantization and CPU/WASM execution for broad compatibility. English and Telugu are supported; mixed-language accuracy can vary.
-
-## Clinical safety
-This is a prototype, not an approved EHR. Never use identifiable patient information for testing. Verify every transcription, especially patient identifiers, drug names, doses, routes, times, units and observations, before official documentation.
+Clinical safety:
+This is a prototype, not an approved EHR. Do not enter identifiable patient data or real patient audio. Manually verify every transcription, especially drug names, doses, routes, units, values, times and negative findings. No automatic medical-term correction is performed.

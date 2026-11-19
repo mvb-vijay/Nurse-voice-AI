@@ -1,50 +1,10 @@
-const CACHE_NAME = "nursevoice-stage1-v1";
-const APP_FILES = ["./", "./index.html", "./manifest.json"];
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES)));
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
-  );
-  self.clients.claim();
-});
-
-self.addEventListener("fetch", (event) => {
-  const request = event.request;
-  const url = new URL(request.url);
-  if (request.method !== "GET") return;
-
-  // Cache the app's own files and the Transformers.js CDN module for offline reopening.
-  const isAppFile = url.origin === self.location.origin;
-  const isLibrary = url.hostname === "cdn.jsdelivr.net";
-  if (!isAppFile && !isLibrary) return;
-
-  if (isAppFile && request.mode === "navigate") {
-    event.respondWith(fetch(request).then(response => {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
-      return response;
-    }).catch(() => caches.match("./index.html")));
-    return;
-  }
-
-  event.respondWith(
-    caches.match(request).then(cached => {
-      const network = fetch(request).then(response => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-        }
-        return response;
-      });
-      return network.catch(() => {
-        if (cached) return cached;
-        throw new Error("This resource is not cached. Connect to the internet and reopen NurseVoice once.");
-      });
-    })
-  );
+const CACHE_NAME="nursevoice-stage1-v11";
+const APP_FILES=["./","./index.html","./manifest.json"];
+self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(APP_FILES)));self.skipWaiting();});
+self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith("nursevoice-stage1-")&&k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim();});
+self.addEventListener("fetch",e=>{
+ const r=e.request,u=new URL(r.url);if(r.method!=="GET")return;
+ const local=u.origin===self.location.origin,cdn=u.hostname==="cdn.jsdelivr.net";if(!local&&!cdn)return;
+ if(local&&r.mode==="navigate"){e.respondWith(fetch(r).then(res=>{if(res.ok)caches.open(CACHE_NAME).then(c=>c.put("./index.html",res.clone()));return res;}).catch(()=>caches.match("./index.html")));return;}
+ e.respondWith(caches.match(r).then(hit=>fetch(r).then(res=>{if(res.ok)caches.open(CACHE_NAME).then(c=>c.put(r,res.clone()));return res;}).catch(()=>{if(hit)return hit;throw new Error("Resource not cached. Connect to internet and reopen NurseVoice.");})));
 });
