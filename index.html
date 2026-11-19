@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="description" content="Private, browser-based offline voice transcription for nursing notes.">
+  <link rel="manifest" href="./manifest.json">
+  <title>NurseVoice AI | Stage 1</title>
+  <style>
+    :root { color-scheme: light; --teal:#0f766e; --dark:#134e4a; --bg:#f3f7f7; --line:#dce7e6; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:#183332; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    header { background:linear-gradient(135deg,#115e59,#0f766e); color:white; padding:24px 18px 22px; }
+    header h1 { margin:0 0 5px; font-size:25px; }
+    header p { margin:0; opacity:.9; font-size:13px; }
+    main { width:min(760px,100%); margin:0 auto; padding:16px; }
+    .card { background:white; border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 3px 12px #163b3810; }
+    h2 { font-size:17px; margin:0 0 12px; }
+    label { display:block; font-weight:650; font-size:13px; margin:12px 0 6px; }
+    select, textarea, button { width:100%; font:inherit; }
+    select { padding:12px; border:1px solid #bfd1cf; border-radius:10px; background:white; }
+    textarea { min-height:190px; resize:vertical; border:1px solid #bfd1cf; border-radius:12px; padding:12px; line-height:1.5; font-size:15px; }
+    button { border:0; border-radius:11px; padding:13px 14px; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.48; cursor:not-allowed; }
+    .primary { background:var(--teal); color:white; }
+    .secondary { background:#e5f2f0; color:var(--dark); }
+    .danger { background:#fff0ef; color:#a12e28; }
+    .actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:12px; }
+    .actions .wide { grid-column:1 / -1; }
+    .record { display:flex; align-items:center; justify-content:center; gap:10px; min-height:54px; font-size:16px; }
+    .dot { width:10px; height:10px; background:#fff; border-radius:50%; display:inline-block; }
+    .recording { background:#b42318; color:white; }
+    .recording .dot { animation:pulse 1s infinite; }
+    @keyframes pulse { 50% { opacity:.25; transform:scale(.75); } }
+    .status { background:#eef7f6; border-radius:10px; padding:11px 12px; font-size:13px; line-height:1.45; min-height:42px; }
+    .muted { color:#617775; font-size:12px; line-height:1.5; }
+    .pill { display:inline-block; border-radius:99px; padding:4px 9px; background:#e5f2f0; color:#115e59; font-size:11px; font-weight:700; }
+    .meter { height:6px; background:#e4eceb; border-radius:20px; overflow:hidden; margin-top:9px; }
+    .meter > div { width:0%; height:100%; background:#0f766e; transition:width .2s; }
+    footer { text-align:center; padding:8px 18px 28px; }
+    @media (min-width:600px) { .actions { grid-template-columns:repeat(3,1fr); } .actions .wide { grid-column:auto; } }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🎙️ NurseVoice AI</h1>
+  <p>Stage 1 · Offline voice-to-text · English + తెలుగు</p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>1. Speech recognition engine</h2>
+    <div class="pill">Whisper multilingual · Runs on this device</div>
+    <label for="language">Recognition language</label>
+    <select id="language">
+      <option value="auto">Auto detect (recommended for English + Telugu mixed speech)</option>
+      <option value="english">English</option>
+      <option value="telugu">Telugu</option>
+    </select>
+    <div class="actions">
+      <button id="loadBtn" class="primary wide">Download / load offline AI model</button>
+    </div>
+    <div id="status" class="status" role="status" aria-live="polite" style="margin-top:12px">First connect to the internet and load the model. The model is large and may take several minutes.</div>
+    <div class="meter"><div id="progress"></div></div>
+    <p class="muted">The first model download needs internet. After it has been cached, transcription can run offline. Keep this app installed and open it once online before testing offline mode.</p>
+  </section>
+
+  <section class="card">
+    <h2>2. Record your voice</h2>
+    <button id="recordBtn" class="primary record" disabled><span class="dot"></span><span id="recordText">Load model first</span></button>
+    <p class="muted">Allow microphone access when Chrome asks. Speak clearly and use short recordings (up to about 60 seconds) for this first version.</p>
+    <div class="actions">
+      <button id="transcribeBtn" class="secondary wide" disabled>Convert recording to text</button>
+    </div>
+    <div id="recordInfo" class="muted" style="margin-top:10px">No recording yet.</div>
+  </section>
+
+  <section class="card">
+    <h2>3. Edit your transcription</h2>
+    <textarea id="transcript" placeholder="Your recognized speech will appear here. You can edit it before using it in nursing documentation." spellcheck="true"></textarea>
+    <div class="actions">
+      <button id="copyBtn" class="secondary">Copy text</button>
+      <button id="clearBtn" class="danger">Clear</button>
+      <button id="downloadBtn" class="secondary wide">Save text file</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Privacy and clinical safety</h2>
+    <p class="muted">Audio is processed in your browser by the downloaded model; this app does not upload recordings to a transcription server. Do not use identifiable patient information in this prototype. Always verify names, drug doses, routes, times, vital signs, units and clinical findings against the source before copying anything into an official record. AI transcription can make clinically important errors.</p>
+  </section>
+</main>
+<footer class="muted">NurseVoice AI · Prototype · Not an electronic health record</footer>
+
+<script type="module">
+  import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2";
+
+  // Browser Cache API stores model files after the first download.
+  env.useBrowserCache = true;
+  env.allowLocalModels = false;
+
+  const MODEL_ID = "Xenova/whisper-tiny";
+  const $ = (id) => document.getElementById(id);
+  let transcriber = null;
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let recordedBlob = null;
+  let recordingStarted = 0;
+  let timerId = null;
+
+  function setStatus(message, percent = null) {
+    $("status").textContent = message;
+    if (percent !== null) $("progress").style.width = `${Math.max(0, Math.min(100, percent))}%`;
+  }
+
+  async function loadModel() {
+    if (transcriber) return;
+    $("loadBtn").disabled = true;
+    setStatus("Loading Whisper multilingual model. Keep this page open; the first download can be large…", 4);
+    try {
+      transcriber = await pipeline("automatic-speech-recognition", MODEL_ID, {
+        dtype: "q8",
+        progress_callback: (p) => {
+          if (p.status === "progress" && Number.isFinite(p.progress)) {
+            setStatus(`Downloading model files: ${p.file || "model"} · ${Math.round(p.progress)}%`, p.progress);
+          } else if (p.status === "done") {
+            setStatus(`Downloaded: ${p.file || "model file"}`, 100);
+          } else if (p.status) {
+            setStatus(`Model: ${p.status}${p.file ? " · " + p.file : ""}`, null);
+          }
+        }
+      });
+      setStatus("AI model loaded. You can now record speech. Model files are cached by the browser.", 100);
+      $("recordBtn").disabled = false;
+      $("recordText").textContent = "Start recording";
+    } catch (err) {
+      console.error(err);
+      setStatus("Could not load the model: " + (err?.message || err) + ". Check internet, free storage and reload the page.", 0);
+      $("loadBtn").disabled = false;
+    }
+  }
+
+  async function startRecording() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setStatus("Microphone access is unavailable. Open the app from its HTTPS website in Chrome, not as a file.", 0);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true }
+      });
+      audioChunks = [];
+      const options = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? { mimeType: "audio/webm;codecs=opus" } : {};
+      mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size) audioChunks.push(event.data);
+      };
+      mediaRecorder.onstop = () => {
+        recordedBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+        stream.getTracks().forEach(track => track.stop());
+        const seconds = Math.max(1, Math.round((Date.now() - recordingStarted) / 1000));
+        $("recordInfo").textContent = `Recording ready · ${seconds} seconds · ${(recordedBlob.size / 1024).toFixed(0)} KB`;
+        $("transcribeBtn").disabled = false;
+        $("recordBtn").classList.remove("recording");
+        $("recordText").textContent = "Record again";
+        $("recordBtn").disabled = false;
+        clearInterval(timerId);
+      };
+      mediaRecorder.start();
+      recordingStarted = Date.now();
+      $("recordBtn").classList.add("recording");
+      $("recordText").textContent = "Stop recording";
+      $("recordInfo").textContent = "Recording… 0 seconds";
+      $("transcribeBtn").disabled = true;
+      $("recordBtn").disabled = false;
+      timerId = setInterval(() => {
+        const s = Math.round((Date.now() - recordingStarted) / 1000);
+        $("recordInfo").textContent = `Recording… ${s} seconds`;
+        if (s >= 60 && mediaRecorder?.state === "recording") stopRecording();
+      }, 500);
+      setStatus("Recording on this device. Tap Stop when finished.", null);
+    } catch (err) {
+      console.error(err);
+      setStatus("Microphone error: " + (err?.message || err) + ". Check Chrome site permissions and Android microphone permission.", 0);
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      $("recordBtn").disabled = true;
+      mediaRecorder.stop();
+      setStatus("Finishing recording…", null);
+    }
+  }
+
+  async function toMono16k(blob) {
+    const bytes = await blob.arrayBuffer();
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioCtx();
+    try {
+      const decoded = await ctx.decodeAudioData(bytes);
+      const channels = [];
+      for (let c = 0; c < decoded.numberOfChannels; c++) channels.push(decoded.getChannelData(c));
+      const mono = new Float32Array(decoded.length);
+      for (let i = 0; i < decoded.length; i++) {
+        let sum = 0;
+        for (let c = 0; c < channels.length; c++) sum += channels[c][i];
+        mono[i] = sum / channels.length;
+      }
+      const targetRate = 16000;
+      const newLength = Math.round(mono.length * targetRate / decoded.sampleRate);
+      const output = new Float32Array(newLength);
+      const ratio = decoded.sampleRate / targetRate;
+      for (let i = 0; i < newLength; i++) {
+        const pos = i * ratio;
+        const left = Math.floor(pos);
+        const right = Math.min(left + 1, mono.length - 1);
+        const frac = pos - left;
+        output[i] = mono[left] * (1 - frac) + mono[right] * frac;
+      }
+      return output;
+    } finally {
+      await ctx.close();
+    }
+  }
+
+  async function transcribe() {
+    if (!transcriber || !recordedBlob) return;
+    $("transcribeBtn").disabled = true;
+    setStatus("Preparing audio and running speech recognition on your phone. This may take a while…", null);
+    try {
+      const audio = await toMono16k(recordedBlob);
+      const selected = $("language").value;
+      const options = { task: "transcribe", chunk_length_s: 30, stride_length_s: 5 };
+      if (selected !== "auto") options.language = selected;
+      const result = await transcriber(audio, options);
+      const text = (result?.text || "").trim();
+      $("transcript").value = $("transcript").value
+        ? $("transcript").value.trimEnd() + "\n" + text
+        : text;
+      setStatus(text ? "Transcription complete. Review and correct it before using it." : "No speech was recognized. Try speaking closer to the microphone.", 100);
+    } catch (err) {
+      console.error(err);
+      setStatus("Transcription failed: " + (err?.message || err) + ". Try a shorter, clearer recording or reload the app.", 0);
+    } finally {
+      $("transcribeBtn").disabled = false;
+    }
+  }
+
+  $("loadBtn").addEventListener("click", loadModel);
+  $("recordBtn").addEventListener("click", () => {
+    if (!transcriber) return;
+    if (mediaRecorder?.state === "recording") stopRecording();
+    else startRecording();
+  });
+  $("transcribeBtn").addEventListener("click", transcribe);
+  $("copyBtn").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText($("transcript").value);
+      setStatus("Transcription copied to clipboard.", 100);
+    } catch {
+      $("transcript").select();
+      setStatus("Select the text and use Copy from the phone menu.", null);
+    }
+  });
+  $("clearBtn").addEventListener("click", () => {
+    $("transcript").value = "";
+    recordedBlob = null;
+    $("recordInfo").textContent = "No recording yet.";
+    $("transcribeBtn").disabled = true;
+    setStatus("Transcription and recording cleared.", 0);
+  });
+  $("downloadBtn").addEventListener("click", () => {
+    const text = $("transcript").value;
+    if (!text.trim()) { setStatus("There is no text to save yet.", null); return; }
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "nursevoice-transcription.txt"; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(err => console.warn("Service worker registration failed", err));
+    });
+  }
+</script>
+</body>
+</html>
