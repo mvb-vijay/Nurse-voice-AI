@@ -20,6 +20,11 @@ textarea{min-height:85px;resize:vertical}input:focus,select:focus,textarea:focus
 button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#e8f1f7;color:var(--navy)}.danger{background:#fff0f0;color:#a12b2b}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.small,.hint,.status{font-size:12px;color:var(--muted)}.microw{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{border-bottom:1px solid var(--line);padding:7px;text-align:left;vertical-align:top}th{font-size:12px;color:var(--muted)}td input{min-width:95px}.remove{padding:7px 9px}
+.drug-start{background:#fff0e8}.drug-regular{background:#eef6ff}.drug-sos{background:#f3edff}
+.drug-type{min-width:105px;font-weight:700}.drug-start .drug-type{color:#b54708}.drug-regular .drug-type{color:#175a9a}.drug-sos .drug-type{color:#6941a5}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}.legend span{padding:5px 9px;border-radius:7px;font-size:12px;font-weight:700}
+.abnormal-cell{background:#ffe7e7!important;border:2px solid #d92d20!important;color:#a11212!important;font-weight:750}.normal-cell{background:#f0fdf4!important;border-color:#86c99a!important}
+.summary-strip{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.summary-tile{background:#eef6ff;border:1px solid #cfe2f5;border-radius:10px;padding:10px 12px;min-width:120px}.summary-tile strong{display:block;font-size:18px;color:#123b5d}
 #output{min-height:260px;background:#fbfdff;white-space:pre-wrap}footer{text-align:center;padding:10px 16px 28px;color:var(--muted);font-size:12px}
 @media(max-width:600px){.grid{grid-template-columns:1fr}header{padding:18px 14px}main{padding:12px}.card{padding:14px}}
 </style>
@@ -49,13 +54,15 @@ button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;curs
 <section class="card">
 <h2>3. Drug chart (manual entry)</h2>
 <p class="small">Enter only what is prescribed/administered and verified. Do not guess missing doses or rates.</p>
-<div class="tablewrap"><table><thead><tr><th>Drug name</th><th>Dose</th><th>Route</th><th>Time</th><th>Frequency / rate</th><th>Status / remarks</th><th></th></tr></thead><tbody id="drugRows"></tbody></table></div>
+<div class="legend"><span style="background:#fff0e8;color:#b54708">START drugs · Top</span><span style="background:#eef6ff;color:#175a9a">Regular drugs · Middle</span><span style="background:#f3edff;color:#6941a5">SOS drugs · Bottom</span></div>
+<div class="tablewrap"><table><thead><tr><th>Category</th><th>Drug name</th><th>Dose</th><th>Route</th><th>Time</th><th>Frequency / rate</th><th>IVF volume (mL)</th><th>Duration (hours)</th><th>Drop factor (gtt/mL)</th><th>Calculated drops/min</th><th>Status / remarks</th><th></th></tr></thead><tbody id="drugRows"></tbody></table></div>
 <div class="btnrow"><button class="secondary" id="addDrug" type="button">+ Add drug row</button></div>
+<p class="hint">For IV fluids, enter volume, duration and the giving-set drop factor to calculate drops/min. For non-IVF drugs, leave these fields blank. Choose START, REGULAR or SOS for each medicine. Rows are automatically grouped: START first, regular medicines next, SOS last. Colours identify each group. SOS means as-needed medication; administer only when the prescription's indication and parameters are met.</p>
 </section>
 
 <section class="card">
 <h2>4. Vital signs chart (manual entry)</h2>
-<p class="small">Record actual measured values, units and observation time.</p>
+<p class="small">Record actual measured values, units and observation time. Red highlighting is an adult screening flag only: HR below 60 or above 100/min; RR below 12 or above 20/min; temperature below 36°C or 38°C and above; SpO₂ below 94%; systolic BP below 90 or BP 140/90 and above. These are configurable clinical-context flags, not diagnoses. Use age- and patient-specific parameters and escalate according to hospital policy.</p>
 <div class="tablewrap"><table><thead><tr><th>Date / time</th><th>BP (mmHg)</th><th>HR (/min)</th><th>RR (/min)</th><th>Temp (°C)</th><th>SpO₂ (%)</th><th>Pain score</th><th></th></tr></thead><tbody id="vitalRows"></tbody></table></div>
 <div class="btnrow"><button class="secondary" id="addVital" type="button">+ Add vital row</button></div>
 </section>
@@ -65,6 +72,8 @@ button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;curs
 <p class="small">Enter measured amounts in mL and specify the source/type and time period.</p>
 <div class="tablewrap"><table><thead><tr><th>Date / time</th><th>Type</th><th>Item / source</th><th>Amount (mL)</th><th>Remarks</th><th></th></tr></thead><tbody id="ioRows"></tbody></table></div>
 <div class="btnrow"><button class="secondary" id="addIO" type="button">+ Add I/O row</button></div>
+<div class="summary-strip" id="ioSummary"><div class="summary-tile">Total input<strong id="totalInput">0 mL</strong></div><div class="summary-tile">Total output<strong id="totalOutput">0 mL</strong></div><div class="summary-tile">Net balance<strong id="netBalance">0 mL</strong></div></div>
+<p class="hint">Totals add all entered rows currently in this chart. Enter the same observation period for meaningful shift totals; net balance is input minus output and is not a fluid-status assessment.</p>
 </section>
 
 <section class="card">
@@ -117,6 +126,112 @@ function addRow(bodyId, fields, placeholders=[]) {
   btn.type="button";btn.className="danger remove";btn.textContent="Remove";
   btn.addEventListener("click",()=>tr.remove());td.appendChild(btn);tr.appendChild(td);
   $(bodyId).appendChild(tr);
+  if(bodyId==="vitalRows"){
+    tr.querySelectorAll("input").forEach(el=>{el.addEventListener("input",()=>checkVitalRow(tr));el.addEventListener("change",()=>checkVitalRow(tr))});
+  }
+  if(bodyId==="ioRows"){
+    tr.querySelectorAll("input,select").forEach(el=>{el.addEventListener("input",updateIOTotals);el.addEventListener("change",updateIOTotals)});
+  }
+}
+function checkVitalRow(tr){
+  const inputs=[...tr.querySelectorAll("input")];
+  // Columns: time, BP, HR, RR, temperature, SpO2, pain.
+  const [time,bp,hr,rr,temp,spo2]=inputs;
+  [bp,hr,rr,temp,spo2].forEach(el=>el.classList.remove("abnormal-cell","normal-cell"));
+  const mark=(el,bad)=>{if(el.value.trim())el.classList.add(bad?"abnormal-cell":"normal-cell")};
+  const hrv=Number(hr.value), rrv=Number(rr.value), tv=Number(temp.value), sv=Number(spo2.value);
+  if(hr.value.trim()!==""&&Number.isFinite(hrv))mark(hr,hrv<60||hrv>100);
+  if(rr.value.trim()!==""&&Number.isFinite(rrv))mark(rr,rrv<12||rrv>20);
+  if(temp.value.trim()!==""&&Number.isFinite(tv))mark(temp,tv<36||tv>=38);
+  if(spo2.value.trim()!==""&&Number.isFinite(sv))mark(spo2,sv<94);
+  const b=(bp.value||"").trim().match(/^(\d{2,3})\s*\/\s*(\d{2,3})$/);
+  if(b){const sys=Number(b[1]),dia=Number(b[2]);mark(bp,sys<90||sys>=140||dia>=90);}
+}
+function updateIOTotals(){
+  let input=0,output=0;
+  [...$("ioRows").querySelectorAll("tr")].forEach(tr=>{
+    const cells=[...tr.querySelectorAll("input,select")];
+    const type=(cells[1]?.value||"").toLowerCase();
+    const amount=Number((cells[3]?.value||"").replace(/,/g,""));
+    if(Number.isFinite(amount)&&amount>=0){
+      if(type==="intake")input+=amount;
+      else if(type==="output")output+=amount;
+    }
+  });
+  $("totalInput").textContent=input.toLocaleString()+" mL";
+  $("totalOutput").textContent=output.toLocaleString()+" mL";
+  const net=input-output;
+  $("netBalance").textContent=(net>0?"+":"")+net.toLocaleString()+" mL";
+}
+function sortDrugRows(){
+  const body=$("drugRows");
+  const rank={"START":0,"REGULAR":1,"SOS":2};
+  [...body.querySelectorAll("tr")].sort((a,b)=>{
+    const av=a.querySelector("select")?.value||"REGULAR";
+    const bv=b.querySelector("select")?.value||"REGULAR";
+    return rank[av]-rank[bv];
+  }).forEach(row=>body.appendChild(row));
+}
+function addDrugRow(){
+  const tr=document.createElement("tr");
+  const categoryCell=document.createElement("td");
+  const category=document.createElement("select");
+  category.className="drug-type";
+  ["START","REGULAR","SOS"].forEach(value=>{
+    const option=document.createElement("option");
+    option.value=value;option.textContent=value;category.appendChild(option);
+  });
+  categoryCell.appendChild(category);tr.appendChild(categoryCell);
+  const specs=[
+    ["Drug name","e.g. Paracetamol"],
+    ["Dose","e.g. 1 g"],
+    ["Route","e.g. IV"],
+    ["Time","e.g. 08:00"],
+    ["Frequency / rate","e.g. 8 hourly"],
+    ["IVF volume (mL)","e.g. 1000"],
+    ["Duration (hours)","e.g. 8"],
+    ["Drop factor (gtt/mL)","Select 10 / 15 / 20 / 60"],
+    ["Calculated drops/min","Auto-calculated"],
+    ["Status / remarks","Given / withheld / indication"]
+  ];
+  specs.forEach(([label,placeholder])=>{
+    const td=document.createElement("td");
+    let input;
+    if(label==="Drop factor (gtt/mL)"){
+      input=document.createElement("select");
+      const blank=document.createElement("option");blank.value="";blank.textContent="Select";input.appendChild(blank);
+      [10,15,20,60].forEach(v=>{const o=document.createElement("option");o.value=String(v);o.textContent=String(v);input.appendChild(o)});
+    } else {
+      input=document.createElement("input");
+      input.type="text";input.placeholder=placeholder;
+      if(label==="Calculated drops/min"){input.readOnly=true;input.placeholder="gtt/min";}
+    }
+    input.setAttribute("aria-label",label);
+    td.appendChild(input);tr.appendChild(td);
+  });
+  const drugInputs=[...tr.querySelectorAll("input,select")];
+  const volume=drugInputs[6], duration=drugInputs[7], dropFactor=drugInputs[8], drops=drugInputs[9];
+  function calculateDrops(){
+    const v=Number(volume.value), h=Number(duration.value), df=Number(dropFactor.value);
+    if(volume.value.trim()!=="" && duration.value.trim()!=="" && dropFactor.value!=="" && Number.isFinite(v) && Number.isFinite(h) && v>0 && h>0 && df>0){
+      drops.value=String(Math.round((v*df)/(h*60)));
+    } else drops.value="";
+  }
+  [volume,duration,dropFactor].forEach(el=>{el.addEventListener("input",calculateDrops);el.addEventListener("change",calculateDrops)});
+  const removeCell=document.createElement("td");
+  const remove=document.createElement("button");
+  remove.type="button";remove.className="danger remove";remove.textContent="Remove";
+  remove.addEventListener("click",()=>tr.remove());
+  removeCell.appendChild(remove);tr.appendChild(removeCell);
+  function paint(){
+    tr.classList.remove("drug-start","drug-regular","drug-sos");
+    tr.classList.add(category.value==="START"?"drug-start":category.value==="SOS"?"drug-sos":"drug-regular");
+    sortDrugRows();
+  }
+  category.addEventListener("change",paint);
+  paint();
+  $("drugRows").appendChild(tr);
+  sortDrugRows();
 }
 function readRows(bodyId){
   return [...$(bodyId).querySelectorAll("tr")].map(tr=>[...tr.querySelectorAll("input,select")].map(el=>el.value.trim())).filter(row=>row.some(Boolean));
@@ -131,21 +246,27 @@ function makeNote(){
   meta.forEach(([k,v])=>{if(v.trim())out+=`${k}: ${v.trim()}\n`});
   out+="\n";
   if($("voiceText").value.trim())out+="NURSING OBSERVATIONS / VOICE TRANSCRIPT\n"+$("voiceText").value.trim()+"\n\n";
-  out+=section("DRUG CHART",readRows("drugRows"),["Drug","Dose","Route","Time","Frequency / rate","Status / remarks"]);
+  const drugGroups=[["START","START DRUGS"],["REGULAR","REGULAR DRUGS"],["SOS","SOS DRUGS"]];
+  drugGroups.forEach(([type,title])=>{
+    const rows=[...$("drugRows").querySelectorAll("tr")].filter(tr=>tr.querySelector("select")?.value===type)
+      .map(tr=>[...tr.querySelectorAll("input")].map(el=>el.value.trim()));
+    out+=section(title,rows,["Drug","Dose","Route","Time","Frequency / rate","IVF volume (mL)","Duration (hours)","Drop factor (gtt/mL)","Calculated drops/min","Status / remarks"]);
+  });
   out+=section("VITAL SIGNS",readRows("vitalRows"),["Date / time","BP (mmHg)","HR (/min)","RR (/min)","Temp (°C)","SpO₂ (%)","Pain score"]);
   out+=section("INTAKE / OUTPUT",readRows("ioRows"),["Date / time","Type","Item / source","Amount (mL)","Remarks"]);
+  out+="I/O TOTALS (all entered rows)\\nInput: "+$("totalInput").textContent+" | Output: "+$("totalOutput").textContent+" | Net balance: "+$("netBalance").textContent+"\\n\\n";
   out+="Nurse name / signature: ______________________________\n";
   out+="Verification: Review all details against the patient and clinical record before official documentation.";
   return out.trim();
 }
-$("addDrug").onclick=()=>addRow("drugRows",["Drug name","Dose","Route","Time","Frequency / rate","Status / remarks"],["e.g. Paracetamol","e.g. 1 g","e.g. IV","e.g. 08:00","e.g. 8 hourly","Given / withheld / remarks"]);
+$("addDrug").onclick=addDrugRow;
 $("addVital").onclick=()=>addRow("vitalRows",["Date / time","BP","HR","RR","Temp","SpO2","Pain score"],["e.g. 08:00","120/80","88","18","37.0","98","0-10"]);
 $("addIO").onclick=()=>addRow("ioRows",["Date / time","Type","Item / source","Amount","Remarks"],["e.g. 08:00","Type","e.g. IV fluid / urine","e.g. 250","e.g. shift total"]);
-$("addDrug").click();$("addVital").click();$("addIO").click();
+$("addDrug").click();$("addVital").click();$("addIO").click();updateIOTotals();
 $("generate").onclick=()=>{$("output").value=makeNote();$("message").textContent="Draft generated. Verify every entry before use."};
 $("copy").onclick=async()=>{if(!$("output").value.trim())$("output").value=makeNote();try{await navigator.clipboard.writeText($("output").value);$("message").textContent="Copied. Verify before using in an approved clinical record."}catch(e){$("output").select();$("message").textContent="Clipboard unavailable. Select and copy the note manually."}};
 $("download").onclick=()=>{if(!$("output").value.trim())$("output").value=makeNote();const blob=new Blob([$("output").value],{type:"text/plain;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="NurseVoice_Nursing_Note.txt";a.click();URL.revokeObjectURL(url)};
-$("clear").onclick=()=>{if(!confirm("Clear all patient details, chart entries and note?"))return;document.querySelectorAll("input,textarea").forEach(el=>{if(!["date","time"].includes(el.id))el.value=""});$("voiceText").value="";$("output").value="";$("drugRows").innerHTML="";$("vitalRows").innerHTML="";$("ioRows").innerHTML="";$("addDrug").click();$("addVital").click();$("addIO").click();$("message").textContent="All entries cleared."};
+$("clear").onclick=()=>{if(!confirm("Clear all patient details, chart entries and note?"))return;document.querySelectorAll("input,textarea").forEach(el=>{if(!["date","time"].includes(el.id))el.value=""});$("voiceText").value="";$("output").value="";$("drugRows").innerHTML="";$("vitalRows").innerHTML="";$("ioRows").innerHTML="";$("addDrug").click();$("addVital").click();$("addIO").click();updateIOTotals();$("message").textContent="All entries cleared."};
 
 let recognition=null;const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(SR){recognition=new SR();recognition.continuous=true;recognition.interimResults=true;
