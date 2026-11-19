@@ -1,10 +1,9 @@
 {
-  "name": "NurseVoice AI - Offline Nursing Voice Notes",
+  "name": "NurseVoice AI Stage 2",
   "short_name": "NurseVoice",
   "start_url": "./",
-  "scope": "./",
   "display": "standalone",
-  "background_color": "#f3f7f7",
-  "theme_color": "#0f766e",
-  "description": "Offline multilingual voice transcription prototype for nursing documentation."
+  "background_color": "#f3f7fa",
+  "theme_color": "#123b5d",
+  "description": "General nursing note builder with voice dictation and manual entry"
 }

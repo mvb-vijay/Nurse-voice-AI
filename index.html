@@ -1,120 +1,203 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f766e"><link rel="manifest" href="./manifest.json">
-<title>NurseVoice AI | Stage 1.1</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#123b5d">
+<title>NurseVoice AI | Stage 2</title>
+<link rel="manifest" href="manifest.json">
 <style>
-:root{color-scheme:light;--teal:#0f766e;--bg:#f3f7f7;--line:#dce7e6}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#183332;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{background:linear-gradient(135deg,#115e59,#0f766e);color:white;padding:23px 18px}header h1{margin:0 0 5px;font-size:25px}header p{margin:0;opacity:.9;font-size:13px}
-main{width:min(760px,100%);margin:auto;padding:15px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 3px 12px #163b3810}
-h2{font-size:17px;margin:0 0 12px}label{display:block;font-weight:650;font-size:13px;margin:12px 0 6px}
-select,textarea,button{width:100%;font:inherit}select{padding:12px;border:1px solid #bfd1cf;border-radius:10px;background:white}
-textarea{min-height:190px;resize:vertical;border:1px solid #bfd1cf;border-radius:12px;padding:12px;line-height:1.5;font-size:15px}
-button{border:0;border-radius:11px;padding:13px 14px;font-weight:700;cursor:pointer}button:disabled{opacity:.48;cursor:not-allowed}
-.primary{background:var(--teal);color:white}.secondary{background:#e5f2f0;color:#134e4a}.danger{background:#fff0ef;color:#a12e28}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.wide{grid-column:1/-1}
-.record{display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;font-size:16px}.recording{background:#b42318;color:white}
-.dot{width:10px;height:10px;background:currentColor;border-radius:50%;display:inline-block}.recording .dot{animation:pulse 1s infinite}@keyframes pulse{50%{opacity:.25;transform:scale(.75)}}
-.status{background:#eef7f6;border-radius:10px;padding:11px 12px;font-size:13px;line-height:1.45;min-height:42px}
-.muted{color:#617775;font-size:12px;line-height:1.5}.pill{display:inline-block;border-radius:99px;padding:4px 9px;background:#e5f2f0;color:#115e59;font-size:11px;font-weight:700}
-.meter{height:6px;background:#e4eceb;border-radius:20px;overflow:hidden;margin-top:9px}.meter>div{width:0;height:100%;background:#0f766e;transition:width .2s}
-.warning{background:#fff8e8;border:1px solid #f0dfb4;color:#6b5017;border-radius:10px;padding:10px;font-size:12px;line-height:1.5;margin-top:10px}
-@media(min-width:600px){.actions{grid-template-columns:repeat(3,1fr)}.wide{grid-column:auto}}footer{text-align:center;padding:8px 18px 28px}
-</style></head>
+:root{--navy:#123b5d;--blue:#1769aa;--teal:#087e78;--bg:#f3f7fa;--ink:#172b3a;--muted:#607484;--line:#d8e2e9;--white:#fff;--warn:#fff4dc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,#123b5d,#1769aa);color:#fff;padding:22px 16px}
+header .wrap,main{max-width:900px;margin:auto}
+h1{font-size:24px;margin:0 0 4px}
+header p{margin:0;color:#e5f2fb}
+main{padding:16px}
+.notice{background:var(--warn);border:1px solid #efd79c;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 14px;box-shadow:0 2px 8px #15344a0a}
+h2{font-size:18px;margin:0 0 12px;color:var(--navy)}
+h3{font-size:15px;margin:14px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+label{display:block;font-size:13px;font-weight:650;color:#344d5e;margin-bottom:5px}
+input,select,textarea{width:100%;border:1px solid #c7d5df;border-radius:9px;padding:11px;font:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:82px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid #8cc7ed;border-color:var(--blue)}
+.field{min-width:0}
+.full{grid-column:1/-1}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+button{border:0;border-radius:9px;padding:11px 14px;font:600 14px system-ui;cursor:pointer}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:#e8f1f7;color:var(--navy)}
+.danger{background:#fff0f0;color:#a12b2b}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.microw{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status{font-size:12px;color:var(--muted)}
+#output{min-height:250px;background:#fbfdff;white-space:pre-wrap}
+.small{font-size:12px;color:var(--muted)}
+footer{text-align:center;padding:10px 16px 28px;color:var(--muted);font-size:12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}header{padding:18px 14px}main{padding:12px}.card{padding:14px}}
+</style>
+</head>
 <body>
-<header><h1>🎙️ NurseVoice AI</h1><p>Stage 1.1 · Improved offline voice transcription · English + తెలుగు</p></header>
+<header><div class="wrap">
+<h1>🩺 NurseVoice AI</h1>
+<p>Stage 2 · General Nursing Notes · Voice + Manual Entry</p>
+</div></header>
 <main>
+<div class="notice"><strong>Clinical safety:</strong> This is a documentation assistant prototype, not an EHR. Use test or de-identified data only. Verify every detail before copying into an official record. It does not diagnose, prescribe, or fill in missing findings.</div>
+
 <section class="card">
-<h2>1. Recognition settings</h2><span class="pill">Multilingual Whisper · On-device processing</span>
-<label for="model">AI model</label>
-<select id="model"><option value="Xenova/whisper-base">Whisper Base · Better accuracy test (recommended)</option><option value="Xenova/whisper-tiny">Whisper Tiny · Faster fallback</option></select>
-<label for="language">Speech language</label>
-<select id="language"><option value="auto">Auto detect · mixed speech attempt</option><option value="english">English</option><option value="telugu">Telugu</option></select>
-<div class="actions"><button id="loadBtn" class="primary wide">Download / load selected model</button></div>
-<div id="status" class="status" role="status" aria-live="polite" style="margin-top:12px">Connect to Wi-Fi and load your selected model. First download may take several minutes.</div>
-<div class="meter"><div id="progress"></div></div>
-<p class="muted">Each model must be downloaded once before it can work offline. Switching to a model not yet cached requires internet.</p>
-<div class="warning"><b>Realme 6:</b> Whisper Base may be slow or exceed available memory on some phone configurations. If Chrome closes or the phone becomes very slow, choose Whisper Tiny.</div>
+<h2>1. Note details</h2>
+<div class="grid">
+<div class="field"><label for="patient">Patient identifier (avoid name)</label><input id="patient" placeholder="e.g. Bed 04 / Hospital ID"></div>
+<div class="field"><label for="bed">Ward / Bed</label><input id="bed" placeholder="e.g. Medical ward / Bed 04"></div>
+<div class="field"><label for="department">Department</label><select id="department"><option value="">Select department</option><option>General ward</option><option>Emergency</option><option>ICU</option><option>OT / Recovery</option><option>OPD</option><option>Other</option></select></div>
+<div class="field"><label for="notetype">Note type</label><select id="notetype"><option>Routine nursing progress note</option><option>Admission assessment</option><option>Shift assessment</option><option>Procedure note</option><option>Transfer note</option><option>Discharge nursing note</option></select></div>
+<div class="field"><label for="date">Date</label><input id="date" type="date"></div>
+<div class="field"><label for="time">Time</label><input id="time" type="time"></div>
+</div>
 </section>
+
 <section class="card">
-<h2>2. Record a short clinical dictation</h2>
-<button id="recordBtn" class="primary record" disabled><span class="dot"></span><span id="recordText">Load model first</span></button>
-<p class="muted">Use a quiet environment. Keep the phone 15–20 cm from your mouth. Speak one short clinical statement at a time. Maximum recording: 60 seconds.</p>
-<div class="actions"><button id="transcribeBtn" class="secondary wide" disabled>Transcribe recording</button></div>
-<div id="recordInfo" class="muted" style="margin-top:10px">No recording yet.</div>
+<h2>2. Voice dictation / transcript</h2>
+<p class="small">Tap Start dictation and speak. Chrome's speech recognition availability and language support depend on your device and internet connection. You can also paste the transcript produced by Stage 1 Whisper here.</p>
+<div class="field"><label for="voiceText">Voice transcript / additional observations</label><textarea id="voiceText" placeholder="Dictate here or paste your Stage 1 Whisper transcript..."></textarea></div>
+<div class="grid" style="margin-top:10px">
+<div class="field"><label for="lang">Dictation language</label><select id="lang"><option value="en-IN">English (India)</option><option value="te-IN">Telugu</option><option value="hi-IN">Hindi</option><option value="en-US">English (US)</option></select></div>
+<div class="field"><label>Microphone</label><div class="microw"><button class="primary" id="startDictation" type="button">🎙 Start dictation</button><button class="secondary" id="stopDictation" type="button" disabled>Stop</button></div><div id="micStatus" class="status">Microphone not active</div></div>
+</div>
 </section>
+
 <section class="card">
-<h2>3. Review and edit transcription</h2>
-<textarea id="transcript" placeholder="Recognized speech appears here. Correct it before using it in nursing documentation." spellcheck="true"></textarea>
-<div class="actions"><button id="copyBtn" class="secondary">Copy text</button><button id="clearBtn" class="danger">Clear</button><button id="downloadBtn" class="secondary wide">Save text file</button></div>
-<div class="warning"><b>Clinical verification required.</b> Check patient identifiers, diagnosis, drug name, dose, route, time, vital sign, decimal, unit and negative findings against the source. This app does not validate clinical truth.</div>
+<h2>3. Manual nursing assessment</h2>
+<div class="grid">
+<div class="field full"><label for="chief">Presenting concern / patient-reported symptoms</label><textarea id="chief" placeholder="e.g. Patient reports abdominal pain since morning..."></textarea></div>
+<div class="field"><label for="conscious">Consciousness / neurological status</label><textarea id="conscious" placeholder="e.g. Conscious, oriented..."></textarea></div>
+<div class="field"><label for="resp">Respiratory assessment</label><textarea id="resp" placeholder="e.g. RR, SpO₂, oxygen device, breath sounds..."></textarea></div>
+<div class="field"><label for="cardio">Cardiovascular assessment</label><textarea id="cardio" placeholder="e.g. Pulse, BP, perfusion, edema..."></textarea></div>
+<div class="field"><label for="git">Gastrointestinal / nutrition</label><textarea id="git" placeholder="e.g. Abdomen, bowel sounds, diet, feeding..."></textarea></div>
+<div class="field"><label for="renal">Renal / elimination</label><textarea id="renal" placeholder="e.g. Urine output, catheter, bowel movements..."></textarea></div>
+<div class="field"><label for="skin">Skin / mobility / comfort</label><textarea id="skin" placeholder="e.g. Skin integrity, pressure areas, mobility, pain..."></textarea></div>
+<div class="field"><label for="vitals">Vital signs</label><textarea id="vitals" placeholder="BP, HR, RR, temperature, SpO₂, pain score. Include units and time."></textarea></div>
+<div class="field"><label for="devices">Lines / tubes / drains / devices</label><textarea id="devices" placeholder="e.g. IV cannula site, Foley catheter, drains..."></textarea></div>
+<div class="field"><label for="meds">Medications / fluids / oxygen / treatment</label><textarea id="meds" placeholder="Record exact drug, dose, route, rate and time as prescribed."></textarea></div>
+<div class="field"><label for="io">Intake and output</label><textarea id="io" placeholder="Record measured intake/output and time period."></textarea></div>
+<div class="field"><label for="interventions">Nursing interventions performed</label><textarea id="interventions" placeholder="e.g. Positioning, wound care, monitoring, patient education..."></textarea></div>
+<div class="field"><label for="response">Patient response / reassessment</label><textarea id="response" placeholder="Document observed response; do not assume improvement."></textarea></div>
+<div class="field full"><label for="plan">Plan / pending tasks / escalation</label><textarea id="plan" placeholder="e.g. Continue monitoring, pending investigations, escalation and handover..."></textarea></div>
+</div>
 </section>
+
 <section class="card">
-<h2>4. Manual clinical verification checklist</h2>
-<p class="muted">Before using a note, manually verify BP, pulse, respiratory rate, SpO₂ and oxygen device, temperature and unit, GCS components, infusion drug/concentration/rate, medication dose/route/time, intake, urine output and drains.</p>
+<h2>4. Generate and review note</h2>
+<p class="small">The app only arranges the information you entered. Empty sections are omitted. It does not interpret or invent clinical findings.</p>
+<div class="btnrow">
+<button class="primary" id="generate" type="button">Generate nursing note</button>
+<button class="secondary" id="copy" type="button">Copy note</button>
+<button class="secondary" id="download" type="button">Download .txt</button>
+<button class="danger" id="clear" type="button">Clear all fields</button>
+</div>
+<div style="margin-top:12px"><label for="output">Generated note (editable)</label><textarea id="output" placeholder="Your generated nursing note will appear here..."></textarea></div>
+<div id="message" class="status" aria-live="polite"></div>
 </section>
-<section class="card">
-<h2>Privacy and limitations</h2>
-<p class="muted">Audio is processed in the browser by the selected downloaded model. This prototype does not intentionally upload recordings to a transcription server. Do not enter identifiable patient information or use this public prototype for real patient records. Browser storage may be cleared. Whisper may misrecognize Indian-accented English, Telugu, mixed speech, medical terms and numbers. Never use output without human verification.</p>
-</section>
-</main><footer class="muted">NurseVoice AI · Stage 1.1 prototype · Not an approved electronic health record</footer>
-<script type="module">
-import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.2";
-env.useBrowserCache=true; env.allowLocalModels=false;
-const $=id=>document.getElementById(id);
-let transcriber=null,activeModel=null,recorder=null,chunks=[],blob=null,start=0,timer=null,busy=false;
-function setStatus(msg,p=null){$("status").textContent=msg;if(p!==null)$("progress").style.width=Math.max(0,Math.min(100,p))+"%";}
-async function loadModel(){
- const chosen=$("model").value;if(transcriber&&activeModel===chosen){setStatus("Selected model already loaded. Ready to record.",100);return;}if(busy)return;
- busy=true;$("loadBtn").disabled=true;$("model").disabled=true;$("language").disabled=true;transcriber=null;activeModel=null;setStatus("Loading "+chosen.split("/").pop()+". Keep this page open.",2);
- try{
-  transcriber=await pipeline("automatic-speech-recognition",chosen,{dtype:"q8",progress_callback:p=>{
-   if(p.status==="progress"&&Number.isFinite(p.progress))setStatus("Downloading "+(p.file||"model file")+" · "+Math.round(p.progress)+"%",p.progress);
-   else if(p.status==="done")setStatus("Downloaded "+(p.file||"model file"),100);
-   else if(p.status)setStatus("Model status: "+p.status+(p.file?" · "+p.file:""));
-  }});
-  activeModel=chosen;setStatus(chosen.split("/").pop()+" loaded. Ready to record.",100);$("recordBtn").disabled=false;$("recordText").textContent="Start recording";
- }catch(e){console.error(e);setStatus("Model loading failed: "+(e?.message||e)+". Check Wi-Fi/storage or try Whisper Tiny.",0);transcriber=null;activeModel=null;}
- finally{busy=false;$("loadBtn").disabled=false;$("model").disabled=false;$("language").disabled=false;}
+</main>
+<footer>NurseVoice AI · Prototype · Review and authenticate documentation according to your hospital policy.</footer>
+<script>
+const $ = id => document.getElementById(id);
+const fields = [
+  ["Presenting concern / patient-reported symptoms","chief"],
+  ["Consciousness / neurological status","conscious"],
+  ["Respiratory assessment","resp"],
+  ["Cardiovascular assessment","cardio"],
+  ["Gastrointestinal / nutrition","git"],
+  ["Renal / elimination","renal"],
+  ["Skin / mobility / comfort","skin"],
+  ["Vital signs","vitals"],
+  ["Lines / tubes / drains / devices","devices"],
+  ["Medications / fluids / oxygen / treatment","meds"],
+  ["Intake and output","io"],
+  ["Nursing interventions performed","interventions"],
+  ["Patient response / reassessment","response"],
+  ["Plan / pending tasks / escalation","plan"],
+  ["Voice transcript / additional observations","voiceText"]
+];
+const now = new Date();
+$("date").value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+$("time").value = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+
+function makeNote(){
+  const lines = [];
+  lines.push("NURSING DOCUMENTATION");
+  const meta = [
+    ["Patient identifier", $("patient").value.trim()],
+    ["Ward / Bed", $("bed").value.trim()],
+    ["Department", $("department").value],
+    ["Note type", $("notetype").value],
+    ["Date", $("date").value],
+    ["Time", $("time").value]
+  ];
+  meta.forEach(([k,v])=>{if(v) lines.push(`${k}: ${v}`)});
+  lines.push("");
+  fields.forEach(([label,id])=>{
+    const value = $(id).value.trim();
+    if(value){lines.push(label.toUpperCase());lines.push(value);lines.push("");}
+  });
+  lines.push("Nurse name / signature: ______________________________");
+  lines.push("Note: Verify all entries against the patient and clinical record before official documentation.");
+  return lines.join("\n").trim();
 }
-async function startRecording(){
- if(!navigator.mediaDevices?.getUserMedia){setStatus("Microphone unavailable. Open the HTTPS GitHub Pages address in Chrome.",0);return;}
- try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-  chunks=[];const mime=MediaRecorder.isTypeSupported("audio/webm;codecs=opus")?"audio/webm;codecs=opus":"";
-  recorder=new MediaRecorder(stream,mime?{mimeType:mime}:{});recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data);};
-  recorder.onstop=()=>{blob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});stream.getTracks().forEach(t=>t.stop());let sec=Math.max(1,Math.round((Date.now()-start)/1000));$("recordInfo").textContent="Recording ready · "+sec+" seconds · "+Math.round(blob.size/1024)+" KB";$("transcribeBtn").disabled=false;$("recordBtn").classList.remove("recording");$("recordText").textContent="Record again";$("recordBtn").disabled=false;clearInterval(timer);setStatus("Recording ready. Tap Transcribe recording.");};
-  recorder.start(250);start=Date.now();$("recordBtn").classList.add("recording");$("recordText").textContent="Stop recording";$("recordInfo").textContent="Recording… 0 seconds";$("transcribeBtn").disabled=true;
-  timer=setInterval(()=>{let s=Math.round((Date.now()-start)/1000);$("recordInfo").textContent="Recording… "+s+" seconds";if(s>=60&&recorder?.state==="recording")stopRecording();},500);setStatus("Recording on this device. Speak clearly and pause between sentences.");
- }catch(e){console.error(e);setStatus("Microphone error: "+(e?.message||e)+". Check Chrome and Android microphone permissions.",0);}
+$("generate").addEventListener("click",()=>{
+  $("output").value = makeNote();
+  $("message").textContent = "Draft generated. Review every detail before use.";
+});
+$("copy").addEventListener("click",async()=>{
+  if(!$("output").value.trim()) $("output").value = makeNote();
+  try{await navigator.clipboard.writeText($("output").value);$("message").textContent="Copied. Paste only into an approved clinical system after verification."}
+  catch(e){$("output").select();$("message").textContent="Clipboard access unavailable. Select the note and copy it manually."}
+});
+$("download").addEventListener("click",()=>{
+  if(!$("output").value.trim()) $("output").value = makeNote();
+  const blob = new Blob([$("output").value],{type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");a.href=url;a.download="NurseVoice_Nursing_Note.txt";a.click();URL.revokeObjectURL(url);
+});
+$("clear").addEventListener("click",()=>{
+  if(!confirm("Clear all entries and the generated note? This cannot be undone.")) return;
+  document.querySelectorAll("input,textarea").forEach(el=>{if(el.id!=="date"&&el.id!=="time")el.value=""});
+  $("output").value="";$("department").value="";$("notetype").selectedIndex=0;
+  $("message").textContent="Fields cleared.";
+});
+
+let recognition = null;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(SpeechRecognition){
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.onstart=()=>{$("micStatus").textContent="Listening… speak clearly."; $("startDictation").disabled=true;$("stopDictation").disabled=false};
+  recognition.onresult=(event)=>{
+    let finalText="";
+    for(let i=event.resultIndex;i<event.results.length;i++){
+      if(event.results[i].isFinal) finalText += event.results[i][0].transcript+" ";
+    }
+    if(finalText) $("voiceText").value += ($("voiceText").value.trim()?" ":"")+finalText.trim();
+  };
+  recognition.onerror=(event)=>{$("micStatus").textContent="Dictation error: "+event.error+". You can paste a Stage 1 transcript instead."};
+  recognition.onend=()=>{$("micStatus").textContent="Dictation stopped."; $("startDictation").disabled=false;$("stopDictation").disabled=true};
+  $("startDictation").addEventListener("click",()=>{
+    recognition.lang=$("lang").value;
+    try{recognition.start()}catch(e){$("micStatus").textContent="Could not start. Check microphone permission and try again."}
+  });
+  $("stopDictation").addEventListener("click",()=>recognition.stop());
+}else{
+  $("startDictation").disabled=true;
+  $("micStatus").textContent="Speech recognition is not supported in this browser. Use manual typing or paste your Stage 1 Whisper transcript.";
 }
-function stopRecording(){if(recorder?.state==="recording"){$("recordBtn").disabled=true;recorder.stop();}}
-async function prepareAudio(audioBlob){
- const bytes=await audioBlob.arrayBuffer(),ctx=new (window.AudioContext||window.webkitAudioContext)();
- try{
-  const decoded=await ctx.decodeAudioData(bytes),rate=16000,frames=Math.ceil(decoded.duration*rate);
-  const offline=new OfflineAudioContext(1,frames,rate),source=offline.createBufferSource(),gain=offline.createGain();
-  source.buffer=decoded;gain.gain.value=1;source.connect(gain);gain.connect(offline.destination);source.start(0);
-  const rendered=await offline.startRendering();return new Float32Array(rendered.getChannelData(0));
- }finally{await ctx.close();}
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 }
-async function transcribe(){
- if(!transcriber||!blob||busy)return;busy=true;$("transcribeBtn").disabled=true;setStatus("Preparing audio and running on-device recognition. Base may take longer on this phone…");
- try{
-  const audio=await prepareAudio(blob),lang=$("language").value,opts={task:"transcribe",chunk_length_s:20,stride_length_s:4};if(lang!=="auto")opts.language=lang;
-  const result=await transcriber(audio,opts),recognized=(result?.text||"").trim();
-  if(!recognized)setStatus("No speech recognized. Try a quieter place and speak closer to the microphone.",0);
-  else{$("transcript").value=$("transcript").value.trim()?$("transcript").value.trimEnd()+"\\n"+recognized:recognized;setStatus("Transcription finished. Manually verify all clinical facts and numbers.",100);}
- }catch(e){console.error(e);setStatus("Transcription failed: "+(e?.message||e)+". Try a shorter recording or load Whisper Tiny.",0);}
- finally{busy=false;$("transcribeBtn").disabled=false;}
-}
-$("loadBtn").addEventListener("click",loadModel);
-$("recordBtn").addEventListener("click",()=>{if(!transcriber)return;if(recorder?.state==="recording")stopRecording();else startRecording();});
-$("transcribeBtn").addEventListener("click",transcribe);
-$("copyBtn").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("transcript").value);setStatus("Text copied. Verify before clinical use.",100);}catch{$("transcript").select();setStatus("Select the text and use Copy from the phone menu.");}});
-$("clearBtn").addEventListener("click",()=>{$("transcript").value="";blob=null;$("recordInfo").textContent="No recording yet.";$("transcribeBtn").disabled=true;setStatus("Transcription and current recording cleared.",0);});
-$("downloadBtn").addEventListener("click",()=>{let t=$("transcript").value;if(!t.trim()){setStatus("There is no text to save.");return;}let u=URL.createObjectURL(new Blob([t],{type:"text/plain;charset=utf-8"})),a=document.createElement("a");a.href=u;a.download="nursevoice-transcription.txt";a.click();URL.revokeObjectURL(u);});
-if("serviceWorker"in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.warn));
-</script></body></html>
+</script>
+</body>
+</html>
