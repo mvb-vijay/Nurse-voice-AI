@@ -5,5 +5,5 @@
   "display": "standalone",
   "background_color": "#f3f7fa",
   "theme_color": "#123b5d",
-  "description": "General nursing note builder with voice dictation and manual entry"
+  "description": "General nursing documentation with voice, patient information, drug, vital and intake/output charts"
 }
