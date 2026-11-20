@@ -20,8 +20,8 @@ textarea{min-height:85px;resize:vertical}input:focus,select:focus,textarea:focus
 button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#e8f1f7;color:var(--navy)}.danger{background:#fff0f0;color:#a12b2b}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.small,.hint,.status{font-size:12px;color:var(--muted)}.microw{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{border-bottom:1px solid var(--line);padding:7px;text-align:left;vertical-align:top}th{font-size:12px;color:var(--muted)}td input{min-width:95px}.remove{padding:7px 9px}
-.drug-start{background:#fff0e8}.drug-regular{background:#eef6ff}.drug-sos{background:#f3edff}
-.drug-type{min-width:105px;font-weight:700}.drug-start .drug-type{color:#b54708}.drug-regular .drug-type{color:#175a9a}.drug-sos .drug-type{color:#6941a5}
+.drug-start{background:#fff0e8}.drug-regular{background:#eef6ff}.drug-sos{background:#f3edff}.drug-ivf{background:#e8f8f5}.drug-infusion{background:#fff8e8}
+.drug-type{min-width:105px;font-weight:700}.drug-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;min-width:0}.drug-field label{font-size:11px;margin:0 0 3px}.drug-field input,.drug-field select{padding:8px;font-size:13px}.drug-result{background:#eaf6f1;font-weight:750;color:#087e78}.drug-entry td{padding:10px;vertical-align:top}.drug-category-cell{min-width:125px}.drug-remove-cell{min-width:70px}.drug-start .drug-type{color:#b54708}.drug-regular .drug-type{color:#175a9a}.drug-sos .drug-type{color:#6941a5}.drug-ivf .drug-type{color:#087e78}.drug-infusion .drug-type{color:#946200}
 .legend{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}.legend span{padding:5px 9px;border-radius:7px;font-size:12px;font-weight:700}
 .abnormal-cell{background:#ffe7e7!important;border:2px solid #d92d20!important;color:#a11212!important;font-weight:750}.normal-cell{background:#f0fdf4!important;border-color:#86c99a!important}
 .summary-strip{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.summary-tile{background:#eef6ff;border:1px solid #cfe2f5;border-radius:10px;padding:10px 12px;min-width:120px}.summary-tile strong{display:block;font-size:18px;color:#123b5d}
@@ -30,9 +30,9 @@ button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;curs
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>🩺 NurseVoice AI</h1><p>Stage 2 · General Nursing Notes · Voice + Focused Manual Entry</p></div></header>
+<header><div class="wrap"><h1>🩺 NurseVoice AI</h1><p>Stage 2 · General Nursing Notes · Clinical charts update · Build 3.0 · Date-wise drug chart</p></div></header>
 <main>
-<div class="notice"><strong>Clinical safety and privacy:</strong> Prototype only, not an approved EHR. Use fictional or de-identified test data. Review every entry before official documentation. Do not enter identifiable patient data into this public website.</div>
+<div class="notice"><strong>Clinical safety and privacy:</strong> Prototype only, not an approved EHR. Use fictional or de-identified test data. Review every entry before official documentation. Do not enter identifiable patient data into this public website. Date-wise drug entries are saved in this browser on this device only. Clearing browser data may erase them; browser storage is not an approved clinical record system.</div>
 
 <section class="card">
 <h2>1. Patient information</h2>
@@ -45,7 +45,6 @@ button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;curs
 <div class="field"><label for="bed">Bed number</label><input id="bed" placeholder="e.g. Bed 04"></div>
 <div class="field"><label for="diagnosis">Diagnosis / reason for admission</label><input id="diagnosis" placeholder="As documented by treating team"></div>
 <div class="field"><label for="noteType">Note type</label><select id="noteType"><option>Routine nursing progress note</option><option>Admission note</option><option>Shift handover note</option><option>Procedure note</option><option>Transfer note</option><option>Discharge nursing note</option></select></div>
-<div class="field"><label for="date">Date</label><input id="date" type="date"></div>
 <div class="field"><label for="time">Time</label><input id="time" type="time"></div>
 </div>
 </section>
@@ -53,11 +52,12 @@ button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;curs
 
 <section class="card">
 <h2>3. Drug chart (manual entry)</h2>
-<p class="small">Enter only what is prescribed/administered and verified. Do not guess missing doses or rates.</p>
-<div class="legend"><span style="background:#fff0e8;color:#b54708">START drugs · Top</span><span style="background:#eef6ff;color:#175a9a">Regular drugs · Middle</span><span style="background:#f3edff;color:#6941a5">SOS drugs · Bottom</span></div>
-<div class="tablewrap"><table><thead><tr><th>Category</th><th>Drug name</th><th>Dose</th><th>Route</th><th>Time</th><th>Frequency / rate</th><th>IVF volume (mL)</th><th>Duration (hours)</th><th>Drop factor (gtt/mL)</th><th>Calculated drops/min</th><th>Status / remarks</th><th></th></tr></thead><tbody id="drugRows"></tbody></table></div>
+<p class="small">Enter only what is prescribed/administered and verified. Do not guess missing doses or rates. The selected date shows only that day's drug entries.</p>
+<div class="summary-strip" style="margin:8px 0 12px"><div class="summary-tile"><label for="date">Drug chart date</label><input id="date" type="date"><div class="hint" id="drugDateStatus">Today · New daily chart</div></div></div>
+<div class="legend"><span style="background:#fff0e8;color:#b54708">START</span><span style="background:#e8f8f5;color:#087e78">IVF</span><span style="background:#fff8e8;color:#946200">Infusion</span><span style="background:#eef6ff;color:#175a9a">REGULAR</span><span style="background:#f3edff;color:#6941a5">SOS</span></div>
+<div class="tablewrap"><table class="drug-table"><thead><tr><th style="width:125px">Drug category</th><th>Required details for selected category</th><th style="width:75px">Action</th></tr></thead><tbody id="drugRows"></tbody></table></div>
 <div class="btnrow"><button class="secondary" id="addDrug" type="button">+ Add drug row</button></div>
-<p class="hint">For IV fluids, enter volume, duration and the giving-set drop factor to calculate drops/min. For non-IVF drugs, leave these fields blank. Choose START, REGULAR or SOS for each medicine. Rows are automatically grouped: START first, regular medicines next, SOS last. Colours identify each group. SOS means as-needed medication; administer only when the prescription's indication and parameters are met.</p>
+<p class="hint">START, REGULAR and SOS contain medication details only, with no fluid-rate calculations. IVF has a fluid selector (RL, NS, DNS, ½NS, 10D), an optional alternating RL/NS plan, prescribed rate (mL/hour), and giving-set drop factor to calculate drops/min directly from the prescribed rate. Infusion records the drug name and total mixed-fluid volume, then calculates mL/hour from the entered duration. The chart groups and colour-codes each category. SOS is administered only when prescribed indication and parameters are met.</p>
 </section>
 
 <section class="card">
@@ -103,6 +103,18 @@ button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;curs
 <footer>NurseVoice AI · Stage 2 prototype · Verify and authenticate all documentation according to hospital policy.</footer>
 <script>
 const $ = id => document.getElementById(id);
+function localDateTimeDefaults(){
+  const now=new Date();
+  const date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const time=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  return {date,time};
+}
+function applyCurrentDateTimeDefaults(root=document){
+  const current=localDateTimeDefaults();
+  root.querySelectorAll('input[type="date"]').forEach(el=>{if(!el.value)el.value=current.date;});
+  root.querySelectorAll('input[type="time"]').forEach(el=>{if(!el.value)el.value=current.time;});
+}
+document.addEventListener('DOMContentLoaded',()=>applyCurrentDateTimeDefaults());
 const now = new Date();
 $("date").value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
 $("time").value = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
@@ -163,76 +175,101 @@ function updateIOTotals(){
   const net=input-output;
   $("netBalance").textContent=(net>0?"+":"")+net.toLocaleString()+" mL";
 }
+function drugStoreKey(date){
+  const identity=activeDrugIdentity;
+  return "nursevoice-drugchart-v1:"+encodeURIComponent(identity)+":"+date;
+}
+function serializeDrugRows(){
+  return [...$("drugRows").querySelectorAll("tr")].map(tr=>{
+    const values={category:tr.querySelector('[data-role="category"]')?.value||"REGULAR"};
+    tr.querySelectorAll("[data-role]").forEach(el=>{if(el.dataset.role!=="category")values[el.dataset.role]=el.value;});
+    return values;
+  }).filter(row=>Object.entries(row).some(([k,v])=>k!=="category"&&String(v||"").trim()));
+}
+let activeDrugDate=$("date").value;
+let activeDrugIdentity=( $("patientId").value.trim()||$("patientName").value.trim()||"default-patient").toLowerCase();
+function saveDrugChart(){
+  if(!activeDrugDate)return;
+  try{localStorage.setItem(drugStoreKey(activeDrugDate),JSON.stringify(serializeDrugRows()));}catch(e){$("message").textContent="Could not save this date's drug chart in this browser.";}
+}
+function setDrugChartReadOnly(readOnly){
+  $("drugRows").querySelectorAll("input,select,button").forEach(el=>{if(el.classList.contains("remove")){el.hidden=readOnly;}else el.disabled=readOnly;});
+  $("addDrug").disabled=readOnly;
+  $("drugDateStatus").textContent=readOnly?"Previous date · View only":"Today · New daily chart";
+}
+function loadDrugChart(date){
+  $("drugRows").innerHTML="";
+  let rows=[];
+  try{rows=JSON.parse(localStorage.getItem(drugStoreKey(date))||"[]");}catch(e){rows=[];}
+  if(Array.isArray(rows)&&rows.length)rows.forEach(row=>addDrugRow(row));
+  else addDrugRow();
+  const isPast=date<localDateTimeDefaults().date;
+  setDrugChartReadOnly(isPast);
+  $("drugDateStatus").textContent=isPast?(rows.length?"Previous date · View only":"No saved drug entries for this date"):(date===localDateTimeDefaults().date?"Today · New daily chart":"Selected date · New chart");
+}
+function switchDrugDate(nextDate){
+  if(!nextDate||nextDate===activeDrugDate)return;
+  saveDrugChart();
+  activeDrugDate=nextDate;
+  $("date").value=nextDate;
+  loadDrugChart(nextDate);
+}
 function sortDrugRows(){
   const body=$("drugRows");
-  const rank={"START":0,"REGULAR":1,"SOS":2};
-  [...body.querySelectorAll("tr")].sort((a,b)=>{
-    const av=a.querySelector("select")?.value||"REGULAR";
-    const bv=b.querySelector("select")?.value||"REGULAR";
-    return rank[av]-rank[bv];
-  }).forEach(row=>body.appendChild(row));
+  const rank={"START":0,"IVF":1,"INFUSION":2,"REGULAR":3,"SOS":4};
+  [...body.querySelectorAll("tr")].sort((a,b)=>rank[a.querySelector('[data-role="category"]')?.value||"REGULAR"] - rank[b.querySelector('[data-role="category"]')?.value||"REGULAR"]).forEach(row=>body.appendChild(row));
 }
-function addDrugRow(){
-  const tr=document.createElement("tr");
-  const categoryCell=document.createElement("td");
-  const category=document.createElement("select");
-  category.className="drug-type";
-  ["START","REGULAR","SOS"].forEach(value=>{
-    const option=document.createElement("option");
-    option.value=value;option.textContent=value;category.appendChild(option);
-  });
-  categoryCell.appendChild(category);tr.appendChild(categoryCell);
-  const specs=[
-    ["Drug name","e.g. Paracetamol"],
-    ["Dose","e.g. 1 g"],
-    ["Route","e.g. IV"],
-    ["Time","e.g. 08:00"],
-    ["Frequency / rate","e.g. 8 hourly"],
-    ["IVF volume (mL)","e.g. 1000"],
-    ["Duration (hours)","e.g. 8"],
-    ["Drop factor (gtt/mL)","Select 10 / 15 / 20 / 60"],
-    ["Calculated drops/min","Auto-calculated"],
-    ["Status / remarks","Given / withheld / indication"]
-  ];
-  specs.forEach(([label,placeholder])=>{
-    const td=document.createElement("td");
-    let input;
-    if(label==="Drop factor (gtt/mL)"){
-      input=document.createElement("select");
-      const blank=document.createElement("option");blank.value="";blank.textContent="Select";input.appendChild(blank);
-      [10,15,20,60].forEach(v=>{const o=document.createElement("option");o.value=String(v);o.textContent=String(v);input.appendChild(o)});
-    } else {
-      input=document.createElement("input");
-      input.type="text";input.placeholder=placeholder;
-      if(label==="Calculated drops/min"){input.readOnly=true;input.placeholder="gtt/min";}
+function addDrugRow(saved=null){
+  const tr=document.createElement("tr");tr.className="drug-entry";
+  const categoryCell=document.createElement("td");categoryCell.className="drug-category-cell";
+  const category=document.createElement("select");category.className="drug-type";category.dataset.role="category";
+  ["START","IVF","INFUSION","REGULAR","SOS"].forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;category.appendChild(o)});if(saved?.category)category.value=saved.category;categoryCell.appendChild(category);tr.appendChild(categoryCell);
+  const detailCell=document.createElement("td");const fields=document.createElement("div");fields.className="drug-fields";detailCell.appendChild(fields);tr.appendChild(detailCell);
+  const removeCell=document.createElement("td");removeCell.className="drug-remove-cell";const remove=document.createElement("button");remove.type="button";remove.className="danger remove";remove.textContent="Remove";remove.onclick=()=>{tr.remove();saveDrugChart();};removeCell.appendChild(remove);tr.appendChild(removeCell);
+  const controls={};
+  function field(role,label,placeholder='',type='text',options=null,readonly=false){
+    const wrap=document.createElement('div');wrap.className='drug-field';const lab=document.createElement('label');lab.textContent=label;wrap.appendChild(lab);let el;
+    if(options){el=document.createElement('select');options.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o)});}else{el=document.createElement('input');el.type=type;el.placeholder=placeholder;}
+    el.dataset.role=role;el.setAttribute('aria-label',label);if(type==='time' && !el.value)el.value=localDateTimeDefaults().time;if(type==='date' && !el.value)el.value=localDateTimeDefaults().date;if(readonly){el.readOnly=true;el.classList.add('drug-result');}wrap.appendChild(el);fields.appendChild(wrap);controls[role]=el;return el;
+  }
+  function buildFields(){
+    fields.innerHTML='';Object.keys(controls).forEach(k=>delete controls[k]);const c=category.value;
+    if(c==='START'){
+      field('name','Drug name','Enter prescribed drug');field('dose','Dose','e.g. 500 mg');field('route','Route','e.g. IV / oral');field('time','Administration time','', 'time');field('status','Status / remarks','Given / withheld / reason');
+    }else if(c==='REGULAR'){
+      field('name','Drug name','Enter prescribed drug');field('dose','Dose','e.g. 500 mg');field('route','Route','e.g. IV / oral');field('time','First dose time','', 'time');
+      field('frequency','Frequency','', 'text',['4 hourly','6 hourly','8 hourly','12 hourly','24 hourly','Other / manual']);
+      field('schedule','Remaining dose times today','Calculated automatically','text',null,true);
+      field('status','Status / remarks','Given / withheld / reason');
+    }else if(c==='SOS'){
+      field('name','Drug name','Enter prescribed drug');field('dose','Dose','e.g. 500 mg');field('route','Route','e.g. IV / oral');field('time','Administration time','', 'time');field('frequency','Frequency / minimum interval','e.g. SOS / 8 hourly PRN');field('status','Status / remarks','Indication and response');
+    }else if(c==='INFUSION'){
+      field('name','Infusion drug name','e.g. prescribed drug');field('volume','Total mixed-fluid volume (mL)','e.g. 100');field('rate','Infusion rate (mL/hour)','e.g. 10');field('time','Start time','e.g. 08:00');field('status','Status / remarks','Running / completed / stopped');
+    }else{
+      field('ivffluid','IVF fluid','', 'text',['RL','NS','DNS','½NS','10D']);field('ivfplan','IVF plan','', 'text',['Single fluid','Alternating RL and NS']);field('rate','Prescribed rate (mL/hour)','e.g. 125');field('dropfactor','Giving-set drop factor','', 'text',['10','15','20','60']);field('drops','Calculated drops/min','gtt/min','text',null,true);field('time','Start time','e.g. 08:00');field('status','Status / remarks','Running / completed / next fluid');
     }
-    input.setAttribute("aria-label",label);
-    td.appendChild(input);tr.appendChild(td);
-  });
-  const drugInputs=[...tr.querySelectorAll("input,select")];
-  const volume=drugInputs[6], duration=drugInputs[7], dropFactor=drugInputs[8], drops=drugInputs[9];
-  function calculateDrops(){
-    const v=Number(volume.value), h=Number(duration.value), df=Number(dropFactor.value);
-    if(volume.value.trim()!=="" && duration.value.trim()!=="" && dropFactor.value!=="" && Number.isFinite(v) && Number.isFinite(h) && v>0 && h>0 && df>0){
-      drops.value=String(Math.round((v*df)/(h*60)));
-    } else drops.value="";
+    Object.values(controls).forEach(el=>{el.addEventListener('input',()=>{calculate();saveDrugChart();});el.addEventListener('change',()=>{calculate();saveDrugChart();});if(saved&&Object.prototype.hasOwnProperty.call(saved,el.dataset.role))el.value=saved[el.dataset.role];});calculate();
   }
-  [volume,duration,dropFactor].forEach(el=>{el.addEventListener("input",calculateDrops);el.addEventListener("change",calculateDrops)});
-  const removeCell=document.createElement("td");
-  const remove=document.createElement("button");
-  remove.type="button";remove.className="danger remove";remove.textContent="Remove";
-  remove.addEventListener("click",()=>tr.remove());
-  removeCell.appendChild(remove);tr.appendChild(removeCell);
-  function paint(){
-    tr.classList.remove("drug-start","drug-regular","drug-sos");
-    tr.classList.add(category.value==="START"?"drug-start":category.value==="SOS"?"drug-sos":"drug-regular");
-    sortDrugRows();
+  function calculate(){
+    if(category.value==='IVF'){
+      const rate=Number(controls.rate?.value),factor=Number(controls.dropfactor?.value);
+      controls.drops.value=controls.rate?.value.trim()&&rate>0&&factor>0?String(Math.round(rate*factor/60)):'';
+    }
+    if(category.value==='REGULAR' && controls.schedule){
+      const first=controls.time?.value||'', freq=controls.frequency?.value||'';
+      const hours={'4 hourly':4,'6 hourly':6,'8 hourly':8,'12 hourly':12,'24 hourly':24}[freq];
+      controls.schedule.value='';
+      if(first && hours){
+        const [hh,mm]=first.split(':').map(Number); const start=hh*60+mm; const times=[];
+        for(let t=start+hours*60;t<1440;t+=hours*60){const h=String(Math.floor(t/60)).padStart(2,'0'),m=String(t%60).padStart(2,'0');times.push(`${h}:${m}`);}
+        controls.schedule.value=times.length?times.join(', '):'No further dose time today';
+      }else if(first && freq==='Other / manual'){controls.schedule.value='Enter per prescribed schedule';}
+    }
   }
-  category.addEventListener("change",paint);
-  paint();
-  $("drugRows").appendChild(tr);
-  sortDrugRows();
+  category.addEventListener('change',()=>{tr.classList.remove('drug-start','drug-regular','drug-sos','drug-ivf','drug-infusion');tr.classList.add({START:'drug-start',REGULAR:'drug-regular',SOS:'drug-sos',IVF:'drug-ivf',INFUSION:'drug-infusion'}[category.value]);buildFields();sortDrugRows();saveDrugChart()});
+  tr.classList.add({START:'drug-start',REGULAR:'drug-regular',SOS:'drug-sos',IVF:'drug-ivf',INFUSION:'drug-infusion'}[category.value]);buildFields();$("drugRows").appendChild(tr);sortDrugRows();saveDrugChart();
 }
+
 function readRows(bodyId){
   return [...$(bodyId).querySelectorAll("tr")].map(tr=>[...tr.querySelectorAll("input,select")].map(el=>el.value.trim())).filter(row=>row.some(Boolean));
 }
@@ -246,11 +283,18 @@ function makeNote(){
   meta.forEach(([k,v])=>{if(v.trim())out+=`${k}: ${v.trim()}\n`});
   out+="\n";
   if($("voiceText").value.trim())out+="NURSING OBSERVATIONS / VOICE TRANSCRIPT\n"+$("voiceText").value.trim()+"\n\n";
-  const drugGroups=[["START","START DRUGS"],["REGULAR","REGULAR DRUGS"],["SOS","SOS DRUGS"]];
+  const drugGroups=[["START","START DRUGS"],["IVF","IVF CHART"],["INFUSION","INFUSION CHART"],["REGULAR","REGULAR DRUGS"],["SOS","SOS DRUGS"]];
   drugGroups.forEach(([type,title])=>{
-    const rows=[...$("drugRows").querySelectorAll("tr")].filter(tr=>tr.querySelector("select")?.value===type)
-      .map(tr=>[...tr.querySelectorAll("input")].map(el=>el.value.trim()));
-    out+=section(title,rows,["Drug","Dose","Route","Time","Frequency / rate","IVF volume (mL)","Duration (hours)","Drop factor (gtt/mL)","Calculated drops/min","Status / remarks"]);
+    const rows=[...$("drugRows").querySelectorAll("tr")].filter(tr=>tr.querySelector('[data-role="category"]')?.value===type).map(tr=>{
+      const val=role=>tr.querySelector(`[data-role="${role}"]`)?.value?.trim()||"";
+      if(type==="IVF")return [val("ivffluid"),val("ivfplan"),val("rate"),val("dropfactor"),val("drops"),val("time"),val("status")];
+      if(type==="INFUSION")return [val("name"),val("volume"),val("rate"),val("time"),val("status")];
+      if(type==='START')return [val('name'),val('dose'),val('route'),val('time'),val('status')];
+      if(type==='REGULAR')return [val('name'),val('dose'),val('route'),val('time'),val('frequency'),val('schedule'),val('status')];
+      return [val('name'),val('dose'),val('route'),val('time'),val('frequency'),val('status')];
+    });
+    const heads=type==="IVF"?["IVF fluid","Plan","Prescribed rate (mL/hour)","Drop factor (gtt/mL)","Calculated drops/min","Start time","Status / remarks"]:type==="INFUSION"?["Infusion drug name","Total mixed-fluid volume (mL)","Infusion rate (mL/hour)","Start time","Status / remarks"]:type==="START"?["Drug name","Dose","Route","Administration time","Status / remarks"]:type==="REGULAR"?["Drug name","Dose","Route","First dose time","Frequency","Remaining dose times today (calculated)","Status / remarks"]:["Drug name","Dose","Route","Administration time","Frequency / minimum interval","Status / remarks"];
+    out+=section(title,rows,heads);
   });
   out+=section("VITAL SIGNS",readRows("vitalRows"),["Date / time","BP (mmHg)","HR (/min)","RR (/min)","Temp (°C)","SpO₂ (%)","Pain score"]);
   out+=section("INTAKE / OUTPUT",readRows("ioRows"),["Date / time","Type","Item / source","Amount (mL)","Remarks"]);
@@ -262,11 +306,16 @@ function makeNote(){
 $("addDrug").onclick=addDrugRow;
 $("addVital").onclick=()=>addRow("vitalRows",["Date / time","BP","HR","RR","Temp","SpO2","Pain score"],["e.g. 08:00","120/80","88","18","37.0","98","0-10"]);
 $("addIO").onclick=()=>addRow("ioRows",["Date / time","Type","Item / source","Amount","Remarks"],["e.g. 08:00","Type","e.g. IV fluid / urine","e.g. 250","e.g. shift total"]);
-$("addDrug").click();$("addVital").click();$("addIO").click();updateIOTotals();
+$("date").value=localDateTimeDefaults().date;
+activeDrugDate=$("date").value;
+loadDrugChart(activeDrugDate);
+$("date").addEventListener("change",()=>switchDrugDate($("date").value));
+["patientId","patientName"].forEach(id=>$(id).addEventListener("change",()=>{saveDrugChart();const next=($("patientId").value.trim()||$("patientName").value.trim()||"default-patient").toLowerCase();if(next!==activeDrugIdentity){activeDrugIdentity=next;loadDrugChart(activeDrugDate);}}));
+$("addVital").click();$("addIO").click();updateIOTotals();
 $("generate").onclick=()=>{$("output").value=makeNote();$("message").textContent="Draft generated. Verify every entry before use."};
 $("copy").onclick=async()=>{if(!$("output").value.trim())$("output").value=makeNote();try{await navigator.clipboard.writeText($("output").value);$("message").textContent="Copied. Verify before using in an approved clinical record."}catch(e){$("output").select();$("message").textContent="Clipboard unavailable. Select and copy the note manually."}};
 $("download").onclick=()=>{if(!$("output").value.trim())$("output").value=makeNote();const blob=new Blob([$("output").value],{type:"text/plain;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="NurseVoice_Nursing_Note.txt";a.click();URL.revokeObjectURL(url)};
-$("clear").onclick=()=>{if(!confirm("Clear all patient details, chart entries and note?"))return;document.querySelectorAll("input,textarea").forEach(el=>{if(!["date","time"].includes(el.id))el.value=""});$("voiceText").value="";$("output").value="";$("drugRows").innerHTML="";$("vitalRows").innerHTML="";$("ioRows").innerHTML="";$("addDrug").click();$("addVital").click();$("addIO").click();updateIOTotals();$("message").textContent="All entries cleared."};
+$("clear").onclick=()=>{if(activeDrugDate<localDateTimeDefaults().date){alert("Previous-date drug charts are view-only and cannot be cleared here.");return;}if(!confirm("Clear all patient details, this date's drug chart entries and note?"))return;document.querySelectorAll("input,textarea").forEach(el=>{if(!["date","time"].includes(el.id))el.value=""});$("voiceText").value="";$("output").value="";$("drugRows").innerHTML="";try{localStorage.removeItem(drugStoreKey(activeDrugDate));}catch(e){}$("vitalRows").innerHTML="";$("ioRows").innerHTML="";addDrugRow();setDrugChartReadOnly(activeDrugDate<localDateTimeDefaults().date);$("addVital").click();$("addIO").click();updateIOTotals();$("message").textContent="Current date entries cleared."};
 
 let recognition=null;const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(SR){recognition=new SR();recognition.continuous=true;recognition.interimResults=true;
