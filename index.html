@@ -27,12 +27,49 @@ button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;curs
 .summary-strip{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.summary-tile{background:#eef6ff;border:1px solid #cfe2f5;border-radius:10px;padding:10px 12px;min-width:120px}.summary-tile strong{display:block;font-size:18px;color:#123b5d}
 #output{min-height:260px;background:#fbfdff;white-space:pre-wrap}footer{text-align:center;padding:10px 16px 28px;color:var(--muted);font-size:12px}
 @media(max-width:600px){.grid{grid-template-columns:1fr}header{padding:18px 14px}main{padding:12px}.card{padding:14px}}
+
+.login-screen{max-width:440px;margin:7vh auto;padding:22px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 30px #123b5d12}
+.login-brand{text-align:center;margin-bottom:18px}.login-brand .logo{font-size:38px}.login-screen h2{text-align:center}.login-screen .field{margin:12px 0}.login-help{background:#fff8e8;border:1px solid #f0d99e;padding:10px;border-radius:10px;font-size:12px;color:#705316;margin-top:12px}
+#appShell[hidden],#loginScreen[hidden],#adminPanel[hidden]{display:none!important}.userbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px}.userchip{font-size:12px;background:#ffffff20;border:1px solid #ffffff45;border-radius:999px;padding:5px 10px}.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.admin-grid .full{grid-column:1/-1}.account-list{display:grid;gap:8px;margin-top:12px}.account-item{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.role-tag{font-size:11px;padding:3px 7px;border-radius:99px;background:#eaf2f8;color:#244b67;font-weight:700}.workflow-note{background:#eef6ff;border:1px solid #cfe2f5;border-radius:10px;padding:10px;font-size:13px;margin:10px 0}
+@media(max-width:600px){.admin-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>🩺 NurseVoice AI</h1><p>Stage 2 · General Nursing Notes · Clinical charts update · Build 3.0 · Date-wise drug chart</p></div></header>
+<section id="loginScreen" class="login-screen">
+  <div class="login-brand"><div class="logo">🩺</div><h1>NurseVoice AI</h1><p class="small">Nursing documentation prototype</p></div>
+  <h2>Staff Login</h2>
+  <form id="loginForm">
+    <div class="field"><label for="loginUser">Nurse ID / Username</label><input id="loginUser" autocomplete="username" required placeholder="Enter your username"></div>
+    <div class="field"><label for="loginPass">Password</label><input id="loginPass" type="password" autocomplete="current-password" required placeholder="Enter password"></div>
+    <button class="primary" style="width:100%;margin-top:8px" type="submit">Login</button>
+    <div id="loginError" class="status" role="alert" style="margin-top:10px"></div>
+  </form>
+  <div class="login-help"><strong>Development demo only</strong><br>Initial administrator: <b>admin</b><br>Temporary password: <b>NVdemo#2026</b><br>Change this password after first login. Do not use real patient data or real staff passwords.</div>
+</section>
+<div id="appShell" hidden>
+<header><div class="wrap"><h1>🩺 NurseVoice AI</h1><p>Clinical documentation prototype · Build 3.1 · Staff login demo</p><div class="userbar"><span id="currentUser" class="userchip"></span><div class="btnrow" style="margin:0"><button id="adminToggle" class="secondary" type="button" hidden>Account management</button><button id="logoutBtn" class="secondary" type="button">Logout</button></div></div></div></header>
 <main>
 <div class="notice"><strong>Clinical safety and privacy:</strong> Prototype only, not an approved EHR. Use fictional or de-identified test data. Review every entry before official documentation. Do not enter identifiable patient data into this public website. Date-wise drug entries are saved in this browser on this device only. Clearing browser data may erase them; browser storage is not an approved clinical record system.</div>
+
+<section id="adminPanel" class="card" hidden>
+<h2>Administrator · Account management</h2>
+<p class="small">Create demo staff accounts and deactivate accounts. Accounts are stored only in this browser for prototype testing.</p>
+<div class="admin-grid">
+ <div class="field"><label for="newFullName">Staff full name</label><input id="newFullName" placeholder="e.g. Sample Nurse"></div>
+ <div class="field"><label for="newUsername">Username / Staff ID</label><input id="newUsername" placeholder="e.g. NUR001"></div>
+ <div class="field"><label for="newPassword">Temporary password</label><input id="newPassword" type="password" placeholder="At least 8 characters"></div>
+ <div class="field"><label for="newRole">Role</label><select id="newRole"><option value="Nurse">Nurse</option><option value="Nursing Supervisor">Nursing Supervisor</option><option value="Admin">Admin</option></select></div>
+ <div class="field full"><label for="newDepartment">Department</label><input id="newDepartment" placeholder="e.g. GI-Pulmonology ICU"></div>
+</div>
+<div class="btnrow"><button id="createAccount" class="primary" type="button">Create account</button></div>
+<div id="accountMessage" class="status" aria-live="polite"></div>
+<h3>Change administrator password</h3>
+<div class="admin-grid"><div class="field"><label for="adminCurrentPassword">Current password</label><input id="adminCurrentPassword" type="password" autocomplete="current-password"></div><div class="field"><label for="adminNewPassword">New password (minimum 8 characters)</label><input id="adminNewPassword" type="password" autocomplete="new-password"></div></div>
+<div class="btnrow"><button id="changeAdminPassword" class="secondary" type="button">Update my password</button></div>
+<h3>Registered demo accounts</h3><div id="accountList" class="account-list"></div>
+</section>
+<div id="roleNotice" class="workflow-note"></div>
 
 <section class="card">
 <h2>1. Patient information</h2>
@@ -87,6 +124,14 @@ button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;curs
 </section>
 
 
+
+<section class="card" id="signoffCard">
+<h2>Documentation sign-off</h2>
+<p class="small">Demo workflow: nurse signs their own completed draft; a supervisor records review. This local prototype does not provide legally reliable signatures or secure audit records.</p>
+<div id="signoffStatus" class="workflow-note">Draft not signed.</div>
+<div class="btnrow"><button class="primary" id="nurseSignBtn" type="button">Sign as nurse</button><button class="secondary" id="supervisorReviewBtn" type="button" hidden>Supervisor review</button><button class="danger" id="unlockDraftBtn" type="button" hidden>Return to draft (demo)</button></div>
+</section>
+
 <section class="card">
 <h2>6. Generate and review nursing note</h2>
 <p class="small">The app arranges your entries. It does not diagnose, interpret values, calculate fluid balance, or invent missing clinical findings.</p>
@@ -100,9 +145,41 @@ button{border:0;border-radius:9px;padding:10px 13px;font:600 14px system-ui;curs
 <div id="message" class="status" aria-live="polite"></div>
 </section>
 </main>
-<footer>NurseVoice AI · Stage 2 prototype · Verify and authenticate all documentation according to hospital policy.</footer>
+<footer>NurseVoice AI · Local development prototype · Not approved for real patient records.</footer>
+</div>
 <script>
 const $ = id => document.getElementById(id);
+// LOCAL DEMO AUTH ONLY. This is not secure authentication and must not protect real clinical data.
+const ACCOUNT_KEY='nursevoice-demo-accounts-v1';
+const SESSION_KEY='nursevoice-demo-session-v1';
+let signedState={nurse:null,supervisor:null};
+function readAccounts(){try{return JSON.parse(localStorage.getItem(ACCOUNT_KEY)||'[]')}catch(e){return []}}
+function writeAccounts(a){localStorage.setItem(ACCOUNT_KEY,JSON.stringify(a))}
+function bytesToHex(buf){return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function passwordHash(password,salt){const enc=new TextEncoder();const key=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode(salt),iterations:120000,hash:'SHA-256'},key,256);return bytesToHex(bits)}
+async function ensureDemoAdmin(){let a=readAccounts();if(!a.length){const salt=bytesToHex(crypto.getRandomValues(new Uint8Array(16)));const hash=await passwordHash('NVdemo#2026',salt);a=[{id:'demo-admin',name:'Demo Administrator',username:'admin',role:'Admin',department:'Administration',salt,hash,active:true,createdAt:new Date().toISOString(),mustChange:true}];writeAccounts(a)}}
+function currentAccount(){const id=sessionStorage.getItem(SESSION_KEY);return readAccounts().find(a=>a.id===id&&a.active)||null}
+function setRoleUI(user){$('loginScreen').hidden=!!user;$('appShell').hidden=!user;if(!user)return;
+ $('currentUser').textContent=`${user.name} · ${user.role} · ${user.department||'No department'}`;
+ $('adminToggle').hidden=user.role!=='Admin';$('adminPanel').hidden=true;
+ $('roleNotice').textContent=user.role==='Admin'?'Administrator session: manage demo accounts and inspect the prototype.':user.role==='Nursing Supervisor'?'Supervisor session: review workflow demonstration. Clinical record editing is disabled in this demo role.':'Nurse session: create and edit your own unsigned demo documentation.';
+ const isSupervisor=user.role==='Nursing Supervisor';
+ document.querySelectorAll('#appShell main input,#appShell main select,#appShell main textarea,#appShell main button').forEach(el=>{if(['logoutBtn','adminToggle','supervisorReviewBtn'].includes(el.id))return;if(isSupervisor)el.disabled=true;});
+ $('supervisorReviewBtn').hidden=user.role!=='Nursing Supervisor';$('nurseSignBtn').hidden=user.role!=='Nurse';
+}
+function renderAccounts(){const list=$('accountList');if(!list)return;list.innerHTML='';readAccounts().forEach(a=>{const item=document.createElement('div');item.className='account-item';const info=document.createElement('div');info.innerHTML=`<strong>${escapeHTML(a.name)}</strong><br><span class="small">${escapeHTML(a.username)} · ${escapeHTML(a.department||'No department')}</span> <span class="role-tag">${escapeHTML(a.role)}</span> <span class="small">${a.active?'Active':'Deactivated'}</span>`;item.appendChild(info);if(a.username!=='admin'){const b=document.createElement('button');b.className=a.active?'danger':'secondary';b.textContent=a.active?'Deactivate':'Activate';b.onclick=()=>{const all=readAccounts();const target=all.find(x=>x.id===a.id);target.active=!target.active;writeAccounts(all);renderAccounts()};item.appendChild(b)}list.appendChild(item)})}
+function escapeHTML(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='Checking credentials…';const username=$('loginUser').value.trim().toLowerCase(),password=$('loginPass').value;const a=readAccounts().find(x=>x.username.toLowerCase()===username&&x.active);if(!a){$('loginError').textContent='Invalid username or password, or account deactivated.';return}try{const hash=await passwordHash(password,a.salt);if(hash!==a.hash){$('loginError').textContent='Invalid username or password.';return}sessionStorage.setItem(SESSION_KEY,a.id);$('loginError').textContent='';$('loginPass').value='';setRoleUI(a);if(a.role==='Admin')renderAccounts();}catch(err){$('loginError').textContent='Secure browser crypto unavailable. Open this site using HTTPS.'}});
+$('logoutBtn').addEventListener('click',()=>{sessionStorage.removeItem(SESSION_KEY);location.reload()});
+$('adminToggle').addEventListener('click',()=>{const p=$('adminPanel');p.hidden=!p.hidden;if(!p.hidden)renderAccounts()});
+$('createAccount').addEventListener('click',async()=>{const name=$('newFullName').value.trim(),username=$('newUsername').value.trim(),password=$('newPassword').value,role=$('newRole').value,department=$('newDepartment').value.trim();if(!name||!username||password.length<8){$('accountMessage').textContent='Enter name, username and a password of at least 8 characters.';return}const a=readAccounts();if(a.some(x=>x.username.toLowerCase()===username.toLowerCase())){$('accountMessage').textContent='That username already exists.';return}const salt=bytesToHex(crypto.getRandomValues(new Uint8Array(16))),hash=await passwordHash(password,salt);a.push({id:'user-'+crypto.randomUUID(),name,username,role,department,salt,hash,active:true,createdAt:new Date().toISOString()});writeAccounts(a);['newFullName','newUsername','newPassword','newDepartment'].forEach(id=>$(id).value='');$('accountMessage').textContent='Demo account created in this browser.';renderAccounts()});
+$('changeAdminPassword').addEventListener('click',async()=>{const user=currentAccount(),oldp=$('adminCurrentPassword').value,newp=$('adminNewPassword').value;if(!user||user.role!=='Admin')return;if(newp.length<8){$('accountMessage').textContent='New password must contain at least 8 characters.';return}const all=readAccounts(),a=all.find(x=>x.id===user.id);if(await passwordHash(oldp,a.salt)!==a.hash){$('accountMessage').textContent='Current password is incorrect.';return}a.salt=bytesToHex(crypto.getRandomValues(new Uint8Array(16)));a.hash=await passwordHash(newp,a.salt);a.mustChange=false;writeAccounts(all);$('adminCurrentPassword').value='';$('adminNewPassword').value='';$('accountMessage').textContent='Administrator password updated in this browser.'});
+
+$('nurseSignBtn').addEventListener('click',()=>{const u=currentAccount();if(!u||u.role!=='Nurse')return;signedState.nurse={name:u.name,username:u.username,at:new Date().toISOString()};localStorage.setItem('nursevoice-demo-signoff:'+activeDrugIdentity+':'+activeDrugDate,JSON.stringify(signedState));renderSignoff()});
+$('supervisorReviewBtn').addEventListener('click',()=>{const u=currentAccount();if(!u||u.role!=='Nursing Supervisor')return;const key='nursevoice-demo-signoff:'+activeDrugIdentity+':'+activeDrugDate;try{signedState=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){}if(!signedState.nurse){$('signoffStatus').textContent='A nurse must sign before supervisor review.';return}signedState.supervisor={name:u.name,username:u.username,at:new Date().toISOString()};localStorage.setItem(key,JSON.stringify(signedState));renderSignoff()});
+$('unlockDraftBtn').addEventListener('click',()=>{if(!confirm('Return this demo record to draft? This is only a prototype action.'))return;signedState={nurse:null,supervisor:null};localStorage.removeItem('nursevoice-demo-signoff:'+activeDrugIdentity+':'+activeDrugDate);renderSignoff()});
+function renderSignoff(){const n=signedState.nurse,s=signedState.supervisor;$('signoffStatus').textContent=n?`Nurse signed by ${n.name} at ${new Date(n.at).toLocaleString()}${s?' · Supervisor reviewed by '+s.name+' at '+new Date(s.at).toLocaleString(): ' · Awaiting supervisor review'}`:'Draft not signed.';$('unlockDraftBtn').hidden=!n;}
+async function initDemoAuth(){if(!crypto?.subtle||!crypto?.getRandomValues){$('loginError').textContent='This browser does not support the required cryptography.';return}await ensureDemoAdmin();const user=currentAccount();setRoleUI(user);if(user?.role==='Admin')renderAccounts();}
 function localDateTimeDefaults(){
   const now=new Date();
   const date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
@@ -309,8 +386,9 @@ $("addIO").onclick=()=>addRow("ioRows",["Date / time","Type","Item / source","Am
 $("date").value=localDateTimeDefaults().date;
 activeDrugDate=$("date").value;
 loadDrugChart(activeDrugDate);
-$("date").addEventListener("change",()=>switchDrugDate($("date").value));
-["patientId","patientName"].forEach(id=>$(id).addEventListener("change",()=>{saveDrugChart();const next=($("patientId").value.trim()||$("patientName").value.trim()||"default-patient").toLowerCase();if(next!==activeDrugIdentity){activeDrugIdentity=next;loadDrugChart(activeDrugDate);}}));
+try{signedState=JSON.parse(localStorage.getItem("nursevoice-demo-signoff:"+activeDrugIdentity+":"+activeDrugDate)||"{}")}catch(e){signedState={nurse:null,supervisor:null}}renderSignoff();
+$("date").addEventListener("change",()=>{switchDrugDate($("date").value);try{signedState=JSON.parse(localStorage.getItem("nursevoice-demo-signoff:"+activeDrugIdentity+":"+activeDrugDate)||"{}")}catch(e){signedState={nurse:null,supervisor:null}}renderSignoff()});
+["patientId","patientName"].forEach(id=>$(id).addEventListener("change",()=>{saveDrugChart();const next=($("patientId").value.trim()||$("patientName").value.trim()||"default-patient").toLowerCase();if(next!==activeDrugIdentity){activeDrugIdentity=next;loadDrugChart(activeDrugDate);try{signedState=JSON.parse(localStorage.getItem("nursevoice-demo-signoff:"+activeDrugIdentity+":"+activeDrugDate)||"{}")}catch(e){signedState={nurse:null,supervisor:null}}renderSignoff();}}));
 $("addVital").click();$("addIO").click();updateIOTotals();
 $("generate").onclick=()=>{$("output").value=makeNote();$("message").textContent="Draft generated. Verify every entry before use."};
 $("copy").onclick=async()=>{if(!$("output").value.trim())$("output").value=makeNote();try{await navigator.clipboard.writeText($("output").value);$("message").textContent="Copied. Verify before using in an approved clinical record."}catch(e){$("output").select();$("message").textContent="Clipboard unavailable. Select and copy the note manually."}};
@@ -326,6 +404,7 @@ recognition.onend=()=>{$("micStatus").textContent="Dictation stopped.";$("startD
 $("startDictation").onclick=()=>{recognition.lang=$("lang").value;try{recognition.start()}catch(e){$("micStatus").textContent="Could not start. Check microphone permission."}};
 $("stopDictation").onclick=()=>recognition.stop();
 }else{$("startDictation").disabled=true;$("micStatus").textContent="Speech recognition unavailable in this browser. Use Stage 1 transcript or manual dictation text."}
+initDemoAuth();
 if("serviceWorker"in navigator&&location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 </script>
 </body></html>
